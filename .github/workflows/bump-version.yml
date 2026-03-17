@@ -25,6 +25,12 @@ jobs:
           version=$(cat VERSION)
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
+      - name: Read previous tag
+        id: previous_tag
+        run: |
+          previous_tag=$(git tag --sort=-v:refname | head -n 1 || true)
+          echo "tag=$previous_tag" >> "$GITHUB_OUTPUT"
+
       - name: Bump patch version
         id: bump
         run: |
@@ -52,3 +58,39 @@ jobs:
             git tag "$tag"
             git push origin "$tag"
           fi
+
+      - name: Build release bundle
+        run: |
+          mkdir -p dist/openclaw-uninstaller
+          cp README.md dist/openclaw-uninstaller/
+          cp README.en.md dist/openclaw-uninstaller/
+          cp LICENSE dist/openclaw-uninstaller/
+          cp VERSION dist/openclaw-uninstaller/
+          cp uninstall-openclaw-windows.ps1 dist/openclaw-uninstaller/
+          cp uninstall-openclaw-unix.sh dist/openclaw-uninstaller/
+          cp run-uninstall-windows.bat dist/openclaw-uninstaller/
+          cp run-uninstall-unix.command dist/openclaw-uninstaller/
+          cp run-uninstall-linux.sh dist/openclaw-uninstaller/
+          cd dist
+          zip -r "openclaw-uninstaller-release.zip" openclaw-uninstaller
+
+      - name: Generate release notes
+        run: |
+          previous_tag="${{ steps.previous_tag.outputs.tag }}"
+          {
+            echo "## 更新说明"
+            echo
+            if [ -n "$previous_tag" ]; then
+              git log --oneline "$previous_tag..${{ github.sha }}" | sed 's/^/- /'
+            else
+              git log --oneline "${{ github.sha }}" --max-count=20 | sed 's/^/- /'
+            fi
+          } > release-notes.md
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.bump.outputs.version }}
+          name: v${{ steps.bump.outputs.version }}
+          body_path: release-notes.md
+          files: dist/openclaw-uninstaller-release.zip

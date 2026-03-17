@@ -104,10 +104,14 @@ contains_item() {
 add_unique() {
   local array_name="$1"
   local value="$2"
+  local has_item=1
+  local existing=()
   set +u
   eval "local existing=(\"\${${array_name}[@]}\")"
+  contains_item "$value" "${existing[@]}"
+  has_item=$?
   set -u
-  contains_item "$value" "${existing[@]}" && return 0
+  [ "$has_item" -eq 0 ] && return 0
   eval "${array_name}+=(\"\$value\")"
 }
 

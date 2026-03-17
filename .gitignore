@@ -2,6 +2,7 @@
 Thumbs.db
 
 dist/
+release/
 tmp/
 *.tmp
 *.bak
