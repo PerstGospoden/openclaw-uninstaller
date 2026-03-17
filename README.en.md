@@ -24,34 +24,66 @@ This repository focuses on one thing: uninstall OpenClaw cleanly across common i
 - 🔎 Detects common one-liner install paths and leftovers
 - 🧹 Still removes Node global packages even if official uninstall succeeds
 - 👀 Supports dry-run mode
+- ✅ Scans the environment first and asks for confirmation before uninstalling
 - 📋 Prints step-by-step uninstall logs
+- 🧾 Shows manual PATH and terminal profile cleanup guidance at the end when needed
 - 🛡️ Keeps Hackable / Git source checkouts intact by default
 
 ## **🚀 Uninstall Scripts**
 
-> **Use these 3 scripts directly for cross-platform OpenClaw uninstall:**
+> **Use these 2 core scripts directly for cross-platform OpenClaw uninstall:**
 
-- **🪟 Windows**: `uninstall-openclaw-windows.ps1`
-- **🍎 macOS**: `uninstall-openclaw-macos.sh`
-- **🐧 Linux**: `uninstall-openclaw-linux.sh`
+- **💻 Windows**: `uninstall-openclaw-windows.ps1`
+- **🍎 macOS / 🐧 Linux**: `uninstall-openclaw-unix.sh`
 
-> **Default strategy: try official uninstall first, keep npm / pnpm / yarn cleanup, then run fallback cleanup only when traces remain.**
+> **If you do not want to open a terminal manually, you can also download and run these launcher files:**
+
+- **💻 Windows**: `run-uninstall-windows.bat`
+- **🍎 macOS**: `run-uninstall-unix.command`
+- **🐧 Linux**: `run-uninstall-linux.sh`
+
+> **Default strategy: scan first, show everything that will be cleaned, ask for confirmation, try official uninstall, keep npm / pnpm / yarn cleanup, then run fallback cleanup only when traces remain.**
 
 ## **⚡ Copy and Run**
 
 > **Want the fastest path? Copy one command and run it.**
 
+### 📦 Download the ZIP and Run It Directly
+
+If you do not want to touch the command line at all, the easiest path is to download the ZIP release bundle:
+
+1. Open the GitHub `Releases` page
+2. Download `openclaw-uninstaller-release.zip`
+3. Extract it anywhere
+4. Double-click or right-click one of these launcher files:
+
+- **💻 Windows**: `run-uninstall-windows.bat`
+- **🍎 macOS**: `run-uninstall-unix.command`
+- **🐧 Linux**: `run-uninstall-linux.sh`
+
+This way, users can simply download, extract, and run the launcher without typing commands manually.
+
 ### 🧭 Open a Terminal First
 
 If you are not familiar with command-line tools yet, here is the quickest way to open one:
 
-- **🪟 Windows**: press `Win`, search for `PowerShell`, then open `Windows PowerShell` or `Terminal`
+- **💻 Windows**: press `Win`, search for `PowerShell`, then open `Windows PowerShell` or `Terminal`
 - **🍎 macOS**: press `Command + Space`, type `Terminal`, then press Enter
 - **🐧 Linux**: usually press `Ctrl + Alt + T`, or search for `Terminal` in your app menu
 
 Once the terminal is open, copy the command for your system below and press Enter.
 
-### 🪟 Windows
+### 🖱️ Do Not Want to Use the Command Line?
+
+You can also download a launcher file from this repository and run it directly:
+
+- **💻 Windows**: download `run-uninstall-windows.bat` and double-click it
+- **🍎 macOS**: download `run-uninstall-unix.command` and double-click or right-click to run it; if macOS blocks it, allow it in `System Settings -> Privacy & Security`
+- **🐧 Linux**: download `run-uninstall-linux.sh` and choose `Run as Program`
+
+Note: these launcher files simply call the uninstall scripts for you; they do not bypass the confirmation flow.
+
+### 💻 Windows
 
 ```powershell
 irm https://raw.githubusercontent.com/hicoldcat/openclaw-uninstaller/main/uninstall-openclaw-windows.ps1 | iex
@@ -60,23 +92,24 @@ irm https://raw.githubusercontent.com/hicoldcat/openclaw-uninstaller/main/uninst
 ### 🍎 macOS
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hicoldcat/openclaw-uninstaller/main/uninstall-openclaw-macos.sh | bash
+curl -fsSL https://raw.githubusercontent.com/hicoldcat/openclaw-uninstaller/main/uninstall-openclaw-unix.sh | bash
 ```
 
 ### 🐧 Linux
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hicoldcat/openclaw-uninstaller/main/uninstall-openclaw-linux.sh | bash
+curl -fsSL https://raw.githubusercontent.com/hicoldcat/openclaw-uninstaller/main/uninstall-openclaw-unix.sh | bash
 ```
 
 ## 🔄 Uninstall Flow
 
 ```text
-1. Detect whether openclaw is installed
-2. Try the official uninstall command first
-3. If traces remain, stop related processes/services and run fallback uninstall
-4. Clean leftover files and config
-5. Verify final uninstall result
+1. Scan commands, processes, services, global packages, and leftover files
+2. Show the full result list and ask the user to confirm
+3. Try the official uninstall command first
+4. If traces remain, stop related processes/services and run fallback uninstall
+5. Clean leftover files, registry/system entries, and verify again
+6. If PATH or shell / PowerShell profiles still contain traces, show where to edit them
 ```
 
 Notes:
@@ -84,6 +117,7 @@ Notes:
 - ✅ npm / pnpm / yarn global uninstall still runs after official uninstall
 - ⏭️ most other heavy fallback actions are skipped if official uninstall already succeeded
 - 🧰 if traces remain, the scripts continue with package-manager uninstall, service stop, and path cleanup
+- 📝 if environment-variable traces remain, the scripts tell users which PATH entries or profile files to edit manually
 
 ## ⚡ One-line Uninstall from GitHub
 
@@ -93,45 +127,65 @@ No manual download is required. The "Copy and Run" section above is the recommen
 
 Preview actions without modifying the system.
 
-### 🪟 Windows
+If you want to skip the confirmation prompt, you can also use `--yes` or `-Yes`.
+
+### 💻 Windows
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\uninstall-openclaw-windows.ps1 -DryRun
 ```
 
+```powershell
+powershell -ExecutionPolicy Bypass -File .\uninstall-openclaw-windows.ps1 -Yes
+```
+
 ### 🍎 macOS
 
 ```bash
-./uninstall-openclaw-macos.sh --dry-run
+./uninstall-openclaw-unix.sh --dry-run
+```
+
+```bash
+./uninstall-openclaw-unix.sh --yes
 ```
 
 ### 🐧 Linux
 
 ```bash
-./uninstall-openclaw-linux.sh --dry-run
+./uninstall-openclaw-unix.sh --dry-run
+```
+
+```bash
+./uninstall-openclaw-unix.sh --yes
 ```
 
 ## 💻 Run Locally
 
-### 🪟 Windows
+### 💻 Windows
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\uninstall-openclaw-windows.ps1
 ```
 
+Or double-click: `run-uninstall-windows.bat`
+
 ### 🍎 macOS
 
 ```bash
-chmod +x ./uninstall-openclaw-macos.sh
-./uninstall-openclaw-macos.sh
+chmod +x ./uninstall-openclaw-unix.sh
+./uninstall-openclaw-unix.sh
 ```
+
+Or run: `run-uninstall-unix.command`
 
 ### 🐧 Linux
 
 ```bash
-chmod +x ./uninstall-openclaw-linux.sh
-./uninstall-openclaw-linux.sh
+chmod +x ./uninstall-openclaw-unix.sh
+./uninstall-openclaw-unix.sh
 ```
+
+Or right-click and run: `run-uninstall-linux.sh`
 
 ## 🧹 What Gets Cleaned
 
@@ -141,9 +195,10 @@ chmod +x ./uninstall-openclaw-linux.sh
 - 🗂️ `~/.cache/openclaw`
 - 🍎 macOS `~/Library/Application Support/openclaw`
 - 🍎 macOS `~/Library/Caches/openclaw`
-- 🪟 Windows `%APPDATA%\openclaw`
-- 🪟 Windows `%LOCALAPPDATA%\openclaw`
+- 💻 Windows `%APPDATA%\openclaw`
+- 💻 Windows `%LOCALAPPDATA%\openclaw`
 - 📦 Node global package leftovers and shim files
+- 🧩 some service entries, desktop launchers, startup files, or registry keys depending on platform
 
 ## 🚫 What Is Not Removed by Default
 
@@ -156,6 +211,7 @@ chmod +x ./uninstall-openclaw-linux.sh
 - 📖 Review scripts before running remote piped commands
 - 🔑 Some actions require Administrator or `sudo`
 - ⛔ Running services/processes may be stopped during fallback cleanup
+- 🧯 If the scripts report remaining PATH or profile traces, edit those files/entries manually and restart the terminal
 
 ## 📄 License
 
