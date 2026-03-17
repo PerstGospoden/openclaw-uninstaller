@@ -2,15 +2,14 @@ name: Publish Release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
 
 permissions:
   contents: write
 
 jobs:
   release:
-    if: "${{ startsWith(github.event.head_commit.message, 'chore: bump version to v') }}"
     runs-on: ubuntu-latest
 
     steps:
@@ -22,7 +21,7 @@ jobs:
       - name: Read version
         id: version
         run: |
-          version=$(cat VERSION)
+          version="${GITHUB_REF_NAME#v}"
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Build release bundle
@@ -42,36 +41,22 @@ jobs:
 
       - name: Generate release notes
         run: |
-          current_tag="v${{ steps.version.outputs.version }}"
+          current_tag="${GITHUB_REF_NAME}"
           previous_tag=$(git tag --sort=-v:refname | grep -vx "$current_tag" | head -n 1 || true)
-          end_ref="HEAD^"
-          if ! git rev-parse "$end_ref" >/dev/null 2>&1; then
-            end_ref="HEAD"
-          fi
           {
             echo "## 更新说明"
             echo
             if [ -n "$previous_tag" ]; then
-              git log --oneline "$previous_tag..$end_ref" | sed 's/^/- /'
+              git log --oneline "$previous_tag..$current_tag" | sed 's/^/- /'
             else
-              git log --oneline "$end_ref" --max-count=20 | sed 's/^/- /'
+              git log --oneline "$current_tag" --max-count=20 | sed 's/^/- /'
             fi
           } > release-notes.md
-
-      - name: Create Git tag
-        run: |
-          tag="v${{ steps.version.outputs.version }}"
-          if git rev-parse "$tag" >/dev/null 2>&1; then
-            echo "Tag $tag already exists"
-          else
-            git tag "$tag"
-            git push origin "$tag"
-          fi
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
+          tag_name: ${{ github.ref_name }}
           name: v${{ steps.version.outputs.version }}
           body_path: release-notes.md
           files: dist/openclaw-uninstaller-release.zip

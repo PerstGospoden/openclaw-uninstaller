@@ -20,6 +20,22 @@ $RegistryKeys = [System.Collections.Generic.List[string]]::new()
 function Step($idx, $msg) { Write-Host "`n==> [$idx] $msg" -ForegroundColor Cyan }
 function Info($msg) { Write-Host " - $msg" }
 function Warn($msg) { Write-Host " ! $msg" -ForegroundColor Yellow }
+function Success($msg) { Write-Host " + $msg" -ForegroundColor Green }
+function Note($msg) { Write-Host " > $msg" -ForegroundColor Magenta }
+function Substep($current, $total, $msg) { Write-Host " [$current/$total] $msg" -ForegroundColor Blue }
+function Show-Banner {
+    Write-Host ""
+    Write-Host "OpenClaw Uninstaller" -ForegroundColor Magenta
+}
+function Show-Progress($idx, $msg) {
+    $parts = $idx -split '/'
+    $current = [int]$parts[0]
+    $total = [int]$parts[1]
+    $filled = ''.PadLeft($current, '#')
+    $empty = ''.PadLeft($total - $current, '-')
+    Write-Host "`n==> [$filled$empty] $msg" -ForegroundColor Cyan
+    Write-Host "   Step $idx" -ForegroundColor DarkCyan
+}
 
 function Add-Unique($list, [string]$value) {
     if ([string]::IsNullOrWhiteSpace($value)) { return }
@@ -28,9 +44,9 @@ function Add-Unique($list, [string]$value) {
 
 function Invoke-Action($description, [scriptblock]$action) {
     if ($DryRun) {
-        Info "[dry-run] $description"
+        Note "[dry-run] $description"
     } else {
-        Info "running: $description"
+        Note "running: $description"
         & $action
     }
 }
@@ -169,7 +185,7 @@ function Print-Section($title, $items) {
 }
 
 function Print-Summary {
-    Step "1/6" "Scan Environment and Preview Targets"
+    Show-Progress "1/6" "Scan Environment and Preview Targets"
     Print-Section "[commands]" $CommandPaths
     Print-Section "[processes]" $Processes
     Print-Section "[services]" $Services
@@ -200,7 +216,7 @@ function Confirm-Uninstall {
 function Show-PathGuidance {
     if ($PathHints.Count -eq 0 -and $ProfileHints.Count -eq 0) { return }
 
-    Step "6/6" "PATH and Profile Cleanup Guidance"
+    Show-Progress "6/6" "PATH and Profile Cleanup Guidance"
     if ($PathHints.Count -gt 0) {
         Warn "PATH still contains OpenClaw-related entries. Open: System Properties -> Advanced -> Environment Variables"
         Warn "Then edit User PATH or System PATH and remove the entries below:"
@@ -215,7 +231,38 @@ function Show-PathGuidance {
     Info "After editing PATH, close and reopen Terminal/PowerShell for the changes to take effect."
 }
 
-Step "0/6" "Flow Overview"
+function Run-PackageCleanup {
+    $pkgNames = @("openclaw", "@openclaw/cli", "@openclaw/openclaw")
+    $total = $pkgNames.Count
+    for ($i = 0; $i -lt $total; $i++) {
+        $pkg = $pkgNames[$i]
+        Substep ($i + 1) $total "Cleaning Node global package: $pkg"
+        if (Cmd-Exists "npm")  { Invoke-Action "npm uninstall -g $pkg" { npm uninstall -g $pkg | Out-Null } }
+        if (Cmd-Exists "pnpm") { Invoke-Action "pnpm remove -g $pkg" { pnpm remove -g $pkg | Out-Null } }
+        if (Cmd-Exists "yarn") { Invoke-Action "yarn global remove $pkg" { yarn global remove $pkg | Out-Null } }
+    }
+}
+
+function Run-FileCleanup {
+    $total = $FilePaths.Count
+    for ($i = 0; $i -lt $total; $i++) {
+        $path = $FilePaths[$i]
+        Substep ($i + 1) $total "Cleaning leftover path: $path"
+        Remove-IfExists $path
+    }
+}
+
+function Run-RegistryCleanup {
+    $total = $RegistryKeys.Count
+    for ($i = 0; $i -lt $total; $i++) {
+        $key = $RegistryKeys[$i]
+        Substep ($i + 1) $total "Removing registry key: $key"
+        Invoke-Action "Remove-Item -Path $key -Recurse -Force" { Remove-Item -Path $key -Recurse -Force }
+    }
+}
+
+Show-Banner
+Show-Progress "0/6" "Flow Overview"
 Info "1) Scan install traces, processes, services, packages, and leftover files"
 Info "2) Show everything found and ask for confirmation"
 Info "3) Try the official uninstall command first"
@@ -233,7 +280,7 @@ if (
     $FilePaths.Count -eq 0 -and
     $RegistryKeys.Count -eq 0
 ) {
-    Step "1/6" "Scan Environment and Preview Targets"
+    Show-Progress "1/6" "Scan Environment and Preview Targets"
     Info "openclaw was not detected; uninstall skipped"
     Show-PathGuidance
     exit 0
@@ -242,13 +289,13 @@ if (
 Print-Summary
 Confirm-Uninstall
 
-Step "2/6" "Try Official Uninstall"
+Show-Progress "2/6" "Try Official Uninstall"
 if (Get-Command openclaw -ErrorAction SilentlyContinue) {
     Invoke-Action "openclaw uninstall --all --yes" { openclaw uninstall --all --yes | Out-Null }
     Scan-All
     if ($CommandPaths.Count -eq 0 -and $Processes.Count -eq 0 -and $Services.Count -eq 0) {
         $OfficialOk = $true
-        Info "official uninstall completed successfully"
+        Success "official uninstall completed successfully"
     } else {
         Warn "official uninstall finished but traces still remain"
     }
@@ -256,10 +303,11 @@ if (Get-Command openclaw -ErrorAction SilentlyContinue) {
     Info "official cli not found, skip direct uninstall"
 }
 
-Step "3/6" "Run Fallback Uninstall"
+Show-Progress "3/6" "Run Fallback Uninstall"
 if ($OfficialOk) {
     Info "skip process/service fallback because official uninstall already removed runtime traces"
 } else {
+    if ($Processes.Count -gt 0) { Substep 1 2 "Stopping related processes" }
     Get-Process | Where-Object {
         $_.Name -match "openclaw|openclawd|openclaw-gateway|claw-gateway"
     } | ForEach-Object {
@@ -267,6 +315,7 @@ if ($OfficialOk) {
         Invoke-Action "Stop-Process -Id $processId -Force" { Stop-Process -Id $processId -Force }
     }
 
+    if ($Services.Count -gt 0) { Substep 2 2 "Stopping related services" }
     Get-Service | Where-Object {
         $_.Name -match "openclaw|claw-gateway|openclaw-gateway|gateway.*openclaw|openclaw.*gateway" -or
         $_.DisplayName -match "openclaw|claw-gateway|openclaw-gateway|gateway.*openclaw|openclaw.*gateway"
@@ -276,28 +325,20 @@ if ($OfficialOk) {
     }
 }
 
-$pkgNames = @("openclaw", "@openclaw/cli", "@openclaw/openclaw")
-foreach ($pkg in $pkgNames) {
-    if (Cmd-Exists "npm")  { Invoke-Action "npm uninstall -g $pkg" { npm uninstall -g $pkg | Out-Null } }
-    if (Cmd-Exists "pnpm") { Invoke-Action "pnpm remove -g $pkg" { pnpm remove -g $pkg | Out-Null } }
-    if (Cmd-Exists "yarn") { Invoke-Action "yarn global remove $pkg" { yarn global remove $pkg | Out-Null } }
-}
+Run-PackageCleanup
 
 if (-not $OfficialOk) {
+    Substep 1 1 "Trying Windows package manager uninstall"
     if (Cmd-Exists "winget") { Invoke-Action "winget uninstall --id openclaw.openclaw --silent --accept-source-agreements" { winget uninstall --id openclaw.openclaw --silent --accept-source-agreements | Out-Null } }
     if (Cmd-Exists "scoop")  { Invoke-Action "scoop uninstall openclaw" { scoop uninstall openclaw | Out-Null } }
     if (Cmd-Exists "choco")  { Invoke-Action "choco uninstall openclaw -y" { choco uninstall openclaw -y | Out-Null } }
 }
 
-Step "4/6" "Clean Leftovers"
-foreach ($path in $FilePaths) {
-    Remove-IfExists $path
-}
-foreach ($key in $RegistryKeys) {
-    Invoke-Action "Remove-Item -Path $key -Recurse -Force" { Remove-Item -Path $key -Recurse -Force }
-}
+Show-Progress "4/6" "Clean Leftovers"
+if ($FilePaths.Count -gt 0) { Run-FileCleanup }
+if ($RegistryKeys.Count -gt 0) { Run-RegistryCleanup }
 
-Step "5/6" "Final Verification"
+Show-Progress "5/6" "Final Verification"
 Scan-All
 Print-Section "[remaining commands]" $CommandPaths
 Print-Section "[remaining processes]" $Processes
@@ -318,4 +359,4 @@ if (
 }
 
 Show-PathGuidance
-Write-Host "Uninstall flow completed." -ForegroundColor Green
+Success "Uninstall flow completed."

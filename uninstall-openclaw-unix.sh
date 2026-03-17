@@ -42,9 +42,53 @@ for arg in "$@"; do
   esac
 done
 
-step() { printf "\n==> [%s] %s\n" "$1" "$2"; }
-info() { printf " - %s\n" "$1"; }
-warn() { printf " ! %s\n" "$1"; }
+if [ -t 1 ]; then
+  C_RESET='\033[0m'
+  C_BOLD='\033[1m'
+  C_CYAN='\033[36m'
+  C_BLUE='\033[34m'
+  C_GREEN='\033[32m'
+  C_YELLOW='\033[33m'
+  C_MAGENTA='\033[35m'
+else
+  C_RESET=''
+  C_BOLD=''
+  C_CYAN=''
+  C_BLUE=''
+  C_GREEN=''
+  C_YELLOW=''
+  C_MAGENTA=''
+fi
+
+progress_bar() {
+  local current="$1"
+  local total="$2"
+  local filled=""
+  local empty=""
+  local i
+  for ((i = 0; i < current; i++)); do filled="${filled}#"; done
+  for ((i = current; i < total; i++)); do empty="${empty}-"; done
+  printf "[%s%s]" "$filled" "$empty"
+}
+
+banner() {
+  printf "\n%bOpenClaw Uninstaller%b\n" "$C_BOLD$C_MAGENTA" "$C_RESET"
+}
+
+step() {
+  printf "\n%b==> %s %s%b\n" "$C_BOLD$C_CYAN" "$(progress_bar "${1%/*}" "${1#*/}")" "$2" "$C_RESET"
+  printf "%b   Step %s%b\n" "$C_BLUE" "$1" "$C_RESET"
+}
+info() { printf " %b•%b %s\n" "$C_BLUE" "$C_RESET" "$1"; }
+warn() { printf " %b!%b %s\n" "$C_YELLOW" "$C_RESET" "$1"; }
+success() { printf " %b✓%b %s\n" "$C_GREEN" "$C_RESET" "$1"; }
+note() { printf " %b>%b %s\n" "$C_MAGENTA" "$C_RESET" "$1"; }
+substep() {
+  local current="$1"
+  local total="$2"
+  local label="$3"
+  printf " %b[%s/%s]%b %s\n" "$C_BOLD$C_BLUE" "$current" "$total" "$C_RESET" "$label"
+}
 cmd_exists() { command -v "$1" >/dev/null 2>&1; }
 
 contains_item() {
@@ -69,10 +113,10 @@ add_unique() {
 
 run_cmd() {
   if [ "$DRY_RUN" -eq 1 ]; then
-    info "[dry-run] $*"
+    note "[dry-run] $*"
     return 0
   fi
-  info "running: $*"
+  note "running: $*"
   "$@" || true
 }
 
@@ -215,7 +259,7 @@ print_section() {
   local title="$1"
   shift
   local items=("$@")
-  printf "\n%s\n" "$title"
+  printf "\n%b%s%b\n" "$C_BOLD$C_MAGENTA" "$title" "$C_RESET"
   if [ "${#items[@]}" -eq 0 ]; then
     info "none detected"
     return
@@ -287,6 +331,60 @@ print_path_guidance() {
   set -u
 }
 
+run_package_cleanup() {
+  local packages=(openclaw @openclaw/cli @openclaw/openclaw)
+  local pkg
+  local total="${#packages[@]}"
+  local idx=0
+  for pkg in "${packages[@]}"; do
+    idx=$((idx + 1))
+    substep "$idx" "$total" "清理 Node 全局包: $pkg"
+    cmd_exists npm && run_cmd npm uninstall -g "$pkg"
+    cmd_exists pnpm && run_cmd pnpm remove -g "$pkg"
+    cmd_exists yarn && run_cmd yarn global remove "$pkg"
+  done
+}
+
+run_linux_pkg_manager_cleanup() {
+  local commands=(
+    "sudo apt-get remove -y openclaw"
+    "sudo dnf remove -y openclaw"
+    "sudo yum remove -y openclaw"
+    "sudo pacman -Rns --noconfirm openclaw"
+    "sudo zypper -n rm openclaw"
+    "sudo snap remove openclaw"
+    "flatpak uninstall -y openclaw"
+  )
+  local total="${#commands[@]}"
+  local idx=0
+  local cmdline
+  for cmdline in "${commands[@]}"; do
+    idx=$((idx + 1))
+    substep "$idx" "$total" "尝试 Linux 包管理器卸载"
+    case "$cmdline" in
+      sudo\ apt-get*) cmd_exists apt-get && run_cmd sudo apt-get remove -y openclaw ;;
+      sudo\ dnf*) cmd_exists dnf && run_cmd sudo dnf remove -y openclaw ;;
+      sudo\ yum*) cmd_exists yum && run_cmd sudo yum remove -y openclaw ;;
+      sudo\ pacman*) cmd_exists pacman && run_cmd sudo pacman -Rns --noconfirm openclaw ;;
+      sudo\ zypper*) cmd_exists zypper && run_cmd sudo zypper -n rm openclaw ;;
+      sudo\ snap*) cmd_exists snap && run_cmd sudo snap remove openclaw ;;
+      flatpak*) cmd_exists flatpak && run_cmd flatpak uninstall -y openclaw ;;
+    esac
+  done
+}
+
+run_file_cleanup() {
+  local total="${#FILE_LIST[@]}"
+  local idx=0
+  local item
+  for item in "${FILE_LIST[@]}"; do
+    idx=$((idx + 1))
+    substep "$idx" "$total" "清理残留文件: $item"
+    remove_if_exists "$item"
+  done
+}
+
+banner
 step "0/6" "流程说明"
 info "1) 扫描安装、进程、服务、包和残留文件"
 info "2) 把扫描结果列出来，让你确认是否继续"
@@ -317,7 +415,7 @@ if cmd_exists "$TARGET"; then
   set +u
   if [ "${#CMD_PATHS[@]}" -eq 0 ] && [ "${#PROCESS_LIST[@]}" -eq 0 ] && [ "${#SERVICE_LIST[@]}" -eq 0 ]; then
     OFFICIAL_OK=1
-    info "official uninstall completed successfully"
+    success "official uninstall completed successfully"
   else
     warn "official uninstall finished but traces still remain"
   fi
@@ -330,16 +428,21 @@ step "3/6" "执行兜底卸载动作"
 if [ "$OFFICIAL_OK" -eq 1 ]; then
   info "skip process/service fallback because official uninstall already removed runtime traces"
 else
+  if [ "${#PROCESS_LIST[@]}" -gt 0 ]; then
+    substep "1" "3" "停止相关进程"
+  fi
   [ "${#PROCESS_LIST[@]}" -gt 0 ] && run_cmd pkill -f "$PATTERN"
   [ "${#PROCESS_LIST[@]}" -gt 0 ] && run_cmd sudo pkill -f "$PATTERN"
 
   if [ "$IS_MACOS" -eq 1 ] && cmd_exists brew; then
+    substep "2" "3" "停止 brew services"
     run_cmd brew services stop openclaw
     run_cmd brew services stop openclaw-gateway
     run_cmd brew services stop claw-gateway
   fi
 
   if [ "$IS_LINUX" -eq 1 ] && cmd_exists systemctl; then
+    substep "3" "3" "停止并禁用 systemd 服务"
     for svc in openclaw openclaw-gateway claw-gateway openclawd; do
       run_cmd sudo systemctl stop "$svc"
       run_cmd sudo systemctl disable "$svc"
@@ -347,33 +450,23 @@ else
   fi
 fi
 
-for pkg in openclaw @openclaw/cli @openclaw/openclaw; do
-  cmd_exists npm && run_cmd npm uninstall -g "$pkg"
-  cmd_exists pnpm && run_cmd pnpm remove -g "$pkg"
-  cmd_exists yarn && run_cmd yarn global remove "$pkg"
-done
+run_package_cleanup
 
 if [ "$OFFICIAL_OK" -ne 1 ]; then
   if [ "$IS_MACOS" -eq 1 ] && cmd_exists brew; then
+    substep "1" "2" "尝试 Homebrew 卸载"
     run_cmd brew uninstall openclaw
     run_cmd brew uninstall --cask openclaw
   fi
 
   if [ "$IS_LINUX" -eq 1 ]; then
-    cmd_exists apt-get && run_cmd sudo apt-get remove -y openclaw
-    cmd_exists dnf && run_cmd sudo dnf remove -y openclaw
-    cmd_exists yum && run_cmd sudo yum remove -y openclaw
-    cmd_exists pacman && run_cmd sudo pacman -Rns --noconfirm openclaw
-    cmd_exists zypper && run_cmd sudo zypper -n rm openclaw
-    cmd_exists snap && run_cmd sudo snap remove openclaw
-    cmd_exists flatpak && run_cmd flatpak uninstall -y openclaw
+    substep "2" "2" "尝试 Linux 包管理器卸载"
+    run_linux_pkg_manager_cleanup
   fi
 fi
 
 step "4/6" "清理残留文件"
-for item in "${FILE_LIST[@]}"; do
-  remove_if_exists "$item"
-done
+run_file_cleanup
 
 step "5/6" "最终验证"
 scan_all
@@ -390,4 +483,4 @@ fi
 set -u
 
 print_path_guidance
-echo "卸载流程执行完成。"
+success "卸载流程执行完成。"

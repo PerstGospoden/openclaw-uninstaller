@@ -42,3 +42,13 @@ jobs:
           git add VERSION
           git commit -m "chore: bump version to v${{ steps.bump.outputs.version }} [skip version]"
           git push
+
+      - name: Create version tag
+        run: |
+          tag="v${{ steps.bump.outputs.version }}"
+          if git rev-parse "$tag" >/dev/null 2>&1; then
+            echo "Tag $tag already exists"
+          else
+            git tag "$tag"
+            git push origin "$tag"
+          fi
