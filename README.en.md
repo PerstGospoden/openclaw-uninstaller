@@ -41,6 +41,16 @@ This repository focuses on one thing: uninstall OpenClaw cleanly across common i
 
 > **Want the fastest path? Copy one command and run it.**
 
+### 🧭 Open a Terminal First
+
+If you are not familiar with command-line tools yet, here is the quickest way to open one:
+
+- **🪟 Windows**: press `Win`, search for `PowerShell`, then open `Windows PowerShell` or `Terminal`
+- **🍎 macOS**: press `Command + Space`, type `Terminal`, then press Enter
+- **🐧 Linux**: usually press `Ctrl + Alt + T`, or search for `Terminal` in your app menu
+
+Once the terminal is open, copy the command for your system below and press Enter.
+
 ### 🪟 Windows
 
 ```powershell

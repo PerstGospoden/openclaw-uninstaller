@@ -41,6 +41,16 @@ _干净卸载，清晰可见；先走官方路径，再做兼容兜底。_
 
 > **想直接执行？复制下面的命令即可。**
 
+### 🧭 先打开命令行工具
+
+如果你还不熟悉怎么打开终端，可以按下面的方式进入：
+
+- **🪟 Windows**: 按 `Win` 键，搜索 `PowerShell`，打开 `Windows PowerShell` 或 `终端`
+- **🍎 macOS**: 按 `Command + Space`，输入 `Terminal`，回车打开 `终端`
+- **🐧 Linux**: 一般可按 `Ctrl + Alt + T`，或在应用菜单里搜索 `Terminal` / `终端`
+
+打开后，把下面对应系统的命令复制进去，按回车即可运行。
+
 ### 🪟 Windows
 
 ```powershell
