@@ -36,32 +36,11 @@ _干净卸载，清晰可见；先走官方路径，再做兼容兜底。_
 - **💻 Windows**: `uninstall-openclaw-windows.ps1`
 - **🍎 macOS / 🐧 Linux**: `uninstall-openclaw-unix.sh`
 
-> **如果你不想手动打开命令行，也可以下载右键运行这些启动文件：**
-
-- **💻 Windows**: `run-uninstall-windows.bat`
-- **🍎 macOS**: `run-uninstall-unix.command`
-- **🐧 Linux**: `run-uninstall-linux.sh`
-
 > **脚本默认策略：先扫描并展示待卸载内容，确认后优先尝试官方卸载，再执行 npm / pnpm / yarn 卸载，最后按残留情况做兜底清理。**
 
 ## **⚡ 复制即用**
 
 > **想直接执行？复制下面的命令即可。**
-
-### 📦 下载 ZIP 后直接运行
-
-如果你完全不想碰命令行，最简单的方式是下载 Release 里的 ZIP 压缩包：
-
-1. 打开 GitHub 项目的 `Releases`
-2. 下载 `openclaw-uninstaller-release.zip`
-3. 解压到任意目录
-4. 直接双击或右键运行下面的启动文件：
-
-- **💻 Windows**: `run-uninstall-windows.bat`
-- **🍎 macOS**: `run-uninstall-unix.command`
-- **🐧 Linux**: `run-uninstall-linux.sh`
-
-这样用户不需要自己输入命令，只需要下载、解压、运行即可。
 
 ### 🧭 先打开命令行工具
 
@@ -72,16 +51,6 @@ _干净卸载，清晰可见；先走官方路径，再做兼容兜底。_
 - **🐧 Linux**: 一般可按 `Ctrl + Alt + T`，或在应用菜单里搜索 `Terminal` / `终端`
 
 打开后，把下面对应系统的命令复制进去，按回车即可运行。
-
-### 🖱️ 不会用命令行？也可以右键运行文件
-
-如果你不想手动输入命令，也可以直接下载仓库里的启动文件，然后双击或右键运行：
-
-- **💻 Windows**: 下载 `run-uninstall-windows.bat`，双击即可运行
-- **🍎 macOS**: 下载 `run-uninstall-unix.command`，右键或双击运行；如果系统拦截，可先在“系统设置 -> 隐私与安全性”里允许
-- **🐧 Linux**: 下载 `run-uninstall-linux.sh`，右键选择 `Run as Program` / `作为程序运行`
-
-提示：启动文件本质上只是帮你自动调用仓库里的卸载脚本，本身不会绕过确认流程。
 
 ### 💻 Windows
 
@@ -167,8 +136,6 @@ powershell -ExecutionPolicy Bypass -File .\uninstall-openclaw-windows.ps1 -Yes
 powershell -ExecutionPolicy Bypass -File .\uninstall-openclaw-windows.ps1
 ```
 
-或直接双击：`run-uninstall-windows.bat`
-
 ### 🍎 macOS
 
 ```bash
@@ -176,16 +143,12 @@ chmod +x ./uninstall-openclaw-unix.sh
 ./uninstall-openclaw-unix.sh
 ```
 
-或直接运行：`run-uninstall-unix.command`
-
 ### 🐧 Linux
 
 ```bash
 chmod +x ./uninstall-openclaw-unix.sh
 ./uninstall-openclaw-unix.sh
 ```
-
-或右键运行：`run-uninstall-linux.sh`
 
 ## 🧹 会清理什么
 

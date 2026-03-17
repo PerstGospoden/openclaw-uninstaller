@@ -36,32 +36,11 @@ This repository focuses on one thing: uninstall OpenClaw cleanly across common i
 - **💻 Windows**: `uninstall-openclaw-windows.ps1`
 - **🍎 macOS / 🐧 Linux**: `uninstall-openclaw-unix.sh`
 
-> **If you do not want to open a terminal manually, you can also download and run these launcher files:**
-
-- **💻 Windows**: `run-uninstall-windows.bat`
-- **🍎 macOS**: `run-uninstall-unix.command`
-- **🐧 Linux**: `run-uninstall-linux.sh`
-
 > **Default strategy: scan first, show everything that will be cleaned, ask for confirmation, try official uninstall, keep npm / pnpm / yarn cleanup, then run fallback cleanup only when traces remain.**
 
 ## **⚡ Copy and Run**
 
 > **Want the fastest path? Copy one command and run it.**
-
-### 📦 Download the ZIP and Run It Directly
-
-If you do not want to touch the command line at all, the easiest path is to download the ZIP release bundle:
-
-1. Open the GitHub `Releases` page
-2. Download `openclaw-uninstaller-release.zip`
-3. Extract it anywhere
-4. Double-click or right-click one of these launcher files:
-
-- **💻 Windows**: `run-uninstall-windows.bat`
-- **🍎 macOS**: `run-uninstall-unix.command`
-- **🐧 Linux**: `run-uninstall-linux.sh`
-
-This way, users can simply download, extract, and run the launcher without typing commands manually.
 
 ### 🧭 Open a Terminal First
 
@@ -72,16 +51,6 @@ If you are not familiar with command-line tools yet, here is the quickest way to
 - **🐧 Linux**: usually press `Ctrl + Alt + T`, or search for `Terminal` in your app menu
 
 Once the terminal is open, copy the command for your system below and press Enter.
-
-### 🖱️ Do Not Want to Use the Command Line?
-
-You can also download a launcher file from this repository and run it directly:
-
-- **💻 Windows**: download `run-uninstall-windows.bat` and double-click it
-- **🍎 macOS**: download `run-uninstall-unix.command` and double-click or right-click to run it; if macOS blocks it, allow it in `System Settings -> Privacy & Security`
-- **🐧 Linux**: download `run-uninstall-linux.sh` and choose `Run as Program`
-
-Note: these launcher files simply call the uninstall scripts for you; they do not bypass the confirmation flow.
 
 ### 💻 Windows
 
@@ -167,8 +136,6 @@ powershell -ExecutionPolicy Bypass -File .\uninstall-openclaw-windows.ps1 -Yes
 powershell -ExecutionPolicy Bypass -File .\uninstall-openclaw-windows.ps1
 ```
 
-Or double-click: `run-uninstall-windows.bat`
-
 ### 🍎 macOS
 
 ```bash
@@ -176,16 +143,12 @@ chmod +x ./uninstall-openclaw-unix.sh
 ./uninstall-openclaw-unix.sh
 ```
 
-Or run: `run-uninstall-unix.command`
-
 ### 🐧 Linux
 
 ```bash
 chmod +x ./uninstall-openclaw-unix.sh
 ./uninstall-openclaw-unix.sh
 ```
-
-Or right-click and run: `run-uninstall-linux.sh`
 
 ## 🧹 What Gets Cleaned
 
